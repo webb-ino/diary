@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Open When... 💌 Letters for You</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, set, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA2LTUK4xSsKm39jsxHNBt6s0t3QpHmYok",
+    authDomain: "letter-a88f6.firebaseapp.com",
+    databaseURL: "https://letter-a88f6-default-rtdb.firebaseio.com",
+    projectId: "letter-a88f6",
+    storageBucket: "letter-a88f6.firebasestorage.app",
+    messagingSenderId: "567979438831",
+    appId: "1:567979438831:web:872d69e30ad246983f611a",
+    measurementId: "G-BEWVS0GMEV"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const lettersRef = ref(db, 'letters');
+
+  // Expose to window so non-module scripts can use
+  window._db = db;
+  window._ref = ref;
+  window._set = set;
+  window._push = push;
+  window._onValue = onValue;
+  window._remove = remove;
+  window._update = update;
+  window._lettersRef = lettersRef;
+  window._firebaseReady = true;
+  window.dispatchEvent(new Event('firebaseReady'));
+</script>
+
+<style>
+:root {
+  --blush: #f5cdd6;
+  --rose: #e8a0b4;
+  --deep-rose: #c9738a;
+  --burgundy: #8b3a52;
+  --cream: #fdf4f0;
+  --parchment: #fef8f2;
+  --warm: #fff5ef;
+  --petal: #fce9ee;
+  --lace: #fdf0f5;
+  --text: #4a2535;
+  --text-mid: #7a4558;
+  --text-light: #b07a90;
+  --gold: #c9a96e;
+  --gold-light: #e8d5b0;
+  --shadow: rgba(139,58,82,0.12);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Crimson Pro', serif;
+  background: var(--cream);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    radial-gradient(ellipse at 20% 20%, rgba(245,205,214,0.3) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(232,160,180,0.2) 0%, transparent 50%),
+    radial-gradient(ellipse at 60% 10%, rgba(252,233,238,0.4) 0%, transparent 40%);
+  pointer-events: none; z-index: 0;
+}
+
+.floatie {
+  position: fixed;
+  font-size: 16px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 0;
+  animation: floatUp 6s ease-out forwards;
+}
+@keyframes floatUp {
+  0% { opacity: 0; transform: translateY(0) rotate(0deg); }
+  20% { opacity: 0.5; }
+  100% { opacity: 0; transform: translateY(-200px) rotate(30deg); }
+}
+
+.wrapper {
+  position: relative; z-index: 1;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 50px 24px 100px;
+}
+
+/* ===== LOADING ===== */
+#loading-screen {
+  position: fixed; inset: 0;
+  background: var(--cream);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  transition: opacity 0.5s;
+}
+#loading-screen.hide { opacity: 0; pointer-events: none; }
+.loading-flower {
+  font-size: 48px;
+  animation: spin 2s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem;
+  font-style: italic;
+  color: var(--text-mid);
+}
+
+/* ===== SYNC STATUS ===== */
+#sync-status {
+  position: fixed;
+  top: 16px; right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: white;
+  border: 1px solid var(--blush);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12px;
+  color: var(--text-light);
+  box-shadow: 0 2px 10px var(--shadow);
+  z-index: 50;
+  transition: all 0.3s;
+}
+.sync-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #4caf50;
+  animation: pulse-dot 2s infinite;
+}
+.sync-dot.offline { background: #e0a0a0; animation: none; }
+@keyframes pulse-dot {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* ===== HEADER ===== */
+header {
+  text-align: center;
+  margin-bottom: 60px;
+  animation: fadeDown 0.8s ease both;
+}
+@keyframes fadeDown {
+  from { opacity:0; transform: translateY(-20px); }
+  to { opacity:1; transform: translateY(0); }
+}
+.header-florals {
+  font-size: 22px;
+  letter-spacing: 12px;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+header h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.8rem, 8vw, 5rem);
+  font-weight: 300;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 8px;
+  letter-spacing: -1px;
+}
+header h1 em { font-style: italic; color: var(--deep-rose); font-weight: 400; }
+header .subtitle {
+  font-size: 17px;
+  color: var(--text-light);
+  font-style: italic;
+  font-weight: 300;
+  margin-bottom: 28px;
+}
+.wax-seal {
+  display: inline-block;
+  width: 52px; height: 52px;
+  background: radial-gradient(circle at 40% 35%, #d4849a, var(--burgundy));
+  border-radius: 50%;
+  line-height: 52px;
+  font-size: 22px;
+  box-shadow: 0 4px 16px rgba(139,58,82,0.35), inset 0 1px 2px rgba(255,255,255,0.2);
+  margin-bottom: 20px;
+  animation: rotateSeal 0.6s ease 0.5s both;
+}
+@keyframes rotateSeal {
+  from { transform: scale(0) rotate(-180deg); opacity: 0; }
+  to { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.mode-bar {
+  display: inline-flex;
+  background: var(--petal);
+  border: 1px solid var(--blush);
+  border-radius: 30px;
+  padding: 4px;
+  gap: 4px;
+  margin-bottom: 40px;
+}
+.mode-btn {
+  padding: 8px 24px;
+  border-radius: 24px;
+  border: none;
+  font-family: 'Crimson Pro', serif;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.25s;
+  color: var(--text-mid);
+  background: transparent;
+  letter-spacing: 0.5px;
+}
+.mode-btn.active {
+  background: white;
+  color: var(--burgundy);
+  box-shadow: 0 2px 10px var(--shadow);
+}
+
+/* ===== LETTERS GRID ===== */
+.letters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+/* ===== ENVELOPE ===== */
+.envelope-wrap {
+  animation: fadeUp 0.6s ease both;
+}
+@keyframes fadeUp {
+  from { opacity:0; transform: translateY(24px); }
+  to { opacity:1; transform: translateY(0); }
+}
+.envelope {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 6px 28px var(--shadow), 0 1px 4px rgba(139,58,82,0.08);
+}
+.envelope:hover {
+  transform: translateY(-4px) rotate(0.5deg);
+  box-shadow: 0 14px 40px var(--shadow);
+}
+.env-body {
+  background: linear-gradient(160deg, var(--parchment) 0%, #fef0f5 100%);
+  border: 1px solid var(--blush);
+  border-radius: 16px;
+  padding: 28px 22px 22px;
+  position: relative;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+.env-flap {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 80px;
+  overflow: hidden;
+  border-radius: 16px 16px 0 0;
+}
+.env-flap::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 160px solid transparent;
+  border-right: 160px solid transparent;
+  border-top: 80px solid var(--blush);
+  opacity: 0.5;
+}
+.env-flap::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 155px solid transparent;
+  border-right: 155px solid transparent;
+  border-top: 76px solid #fdf5f8;
+  opacity: 0.7;
+}
+.env-stamp {
+  position: absolute;
+  top: 14px; right: 16px;
+  width: 36px; height: 44px;
+  border: 2px solid var(--gold);
+  border-radius: 3px;
+  background: var(--gold-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: inset 0 0 0 3px rgba(255,255,255,0.7);
+}
+.env-stamp::before {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border: 1px dashed var(--gold);
+  border-radius: 4px;
+  opacity: 0.4;
+}
+.env-postmark {
+  position: absolute;
+  top: 10px; right: 60px;
+  width: 48px; height: 48px;
+  border: 1.5px solid var(--rose);
+  border-radius: 50%;
+  opacity: 0.3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  color: var(--deep-rose);
+  text-align: center;
+  line-height: 1.2;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.env-content {
+  margin-top: 52px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.env-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-light);
+  margin-bottom: 6px;
+}
+.env-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.35rem;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.3;
+  font-style: italic;
+  flex: 1;
+}
+.env-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--blush);
+}
+.env-status {
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.env-status.locked { color: var(--text-light); }
+.env-status.opened { color: var(--deep-rose); }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.env-floral-deco { font-size: 16px; opacity: 0.4; }
+.envelope.is-opened .env-body {
+  background: linear-gradient(160deg, #fff8fb 0%, #fdeef5 100%);
+  border-color: var(--rose);
+}
+.env-lock-overlay {
+  position: absolute; inset: 0;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.envelope:hover .env-lock-overlay { opacity: 1; }
+.lock-hint {
+  background: white;
+  border: 1px solid var(--blush);
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 12px;
+  color: var(--deep-rose);
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px var(--shadow);
+}
+.env-delete {
+  position: absolute;
+  top: 10px; left: 14px;
+  background: none; border: none;
+  font-size: 16px; cursor: pointer;
+  opacity: 0; transition: opacity 0.2s;
+  z-index: 2; color: var(--text-light);
+}
+.envelope:hover .env-delete { opacity: 0.6; }
+.env-delete:hover { opacity: 1 !important; color: var(--burgundy); }
+
+/* ===== ADD CARD ===== */
+.add-card {
+  border: 2px dashed var(--blush);
+  border-radius: 16px;
+  background: transparent;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.25s;
+  color: var(--text-light);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  font-style: italic;
+}
+.add-card:hover {
+  border-color: var(--rose);
+  background: var(--lace);
+  color: var(--deep-rose);
+  transform: translateY(-2px);
+}
+.add-icon { font-size: 28px; opacity: 0.6; }
+
+/* ===== MODALS ===== */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(74,37,53,0.4);
+  backdrop-filter: blur(6px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.modal-overlay.show { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--parchment);
+  border: 1px solid var(--blush);
+  border-radius: 24px;
+  padding: 40px;
+  max-width: 520px;
+  width: 100%;
+  position: relative;
+  box-shadow: 0 24px 80px rgba(139,58,82,0.2);
+  transform: translateY(20px) scale(0.97);
+  transition: transform 0.3s;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal-overlay.show .modal { transform: translateY(0) scale(1); }
+.modal-floral { text-align: center; font-size: 28px; margin-bottom: 16px; letter-spacing: 8px; }
+.modal h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem;
+  font-weight: 400;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 6px;
+  font-style: italic;
+}
+.modal .modal-sub {
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-light);
+  font-style: italic;
+  margin-bottom: 28px;
+}
+.field-group { margin-bottom: 18px; }
+.field-label {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-mid);
+  margin-bottom: 6px;
+}
+.field-input, .field-textarea, .field-select {
+  width: 100%;
+  background: white;
+  border: 1px solid var(--blush);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-family: 'Crimson Pro', serif;
+  font-size: 16px;
+  color: var(--text);
+  outline: none;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.field-input:focus, .field-textarea:focus, .field-select:focus {
+  border-color: var(--deep-rose);
+  box-shadow: 0 0 0 3px rgba(201,115,138,0.12);
+}
+.field-textarea { min-height: 160px; resize: vertical; line-height: 1.7; }
+.field-select { cursor: pointer; }
+.pw-wrap { position: relative; }
+.pw-wrap .field-input { padding-right: 44px; }
+.pw-toggle {
+  position: absolute;
+  right: 14px; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none;
+  cursor: pointer; font-size: 16px;
+  opacity: 0.5; transition: opacity 0.2s;
+}
+.pw-toggle:hover { opacity: 1; }
+.modal-actions { display: flex; gap: 10px; margin-top: 24px; }
+.btn-primary {
+  flex: 1;
+  background: linear-gradient(135deg, var(--rose), var(--deep-rose));
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-family: 'Crimson Pro', serif;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(201,115,138,0.4); }
+.btn-secondary {
+  padding: 14px 20px;
+  background: transparent;
+  border: 1px solid var(--blush);
+  border-radius: 12px;
+  font-family: 'Crimson Pro', serif;
+  font-size: 15px;
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-secondary:hover { background: var(--petal); }
+.letter-paper {
+  background: white;
+  border: 1px solid var(--blush);
+  border-radius: 16px;
+  padding: 32px 28px;
+  position: relative;
+  box-shadow: inset 0 0 30px rgba(245,205,214,0.2);
+}
+.letter-paper::before {
+  content: '';
+  position: absolute;
+  left: 48px; top: 0; bottom: 0;
+  width: 1px;
+  background: rgba(232,160,180,0.3);
+}
+.letter-lines {
+  font-family: 'Crimson Pro', serif;
+  font-size: 17px;
+  line-height: 2;
+  color: var(--text);
+  white-space: pre-wrap;
+  padding-left: 20px;
+}
+.letter-closing {
+  margin-top: 24px;
+  text-align: right;
+  font-style: italic;
+  color: var(--text-mid);
+  font-size: 15px;
+}
+.pw-modal-icon { text-align: center; font-size: 40px; margin-bottom: 12px; }
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+.shake { animation: shake 0.4s ease; }
+.error-msg {
+  color: var(--deep-rose);
+  font-size: 13px;
+  text-align: center;
+  margin-top: 8px;
+  font-style: italic;
+  min-height: 18px;
+}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--petal); }
+::-webkit-scrollbar-thumb { background: var(--blush); border-radius: 10px; }
+.empty-hint {
+  text-align: center;
+  color: var(--text-light);
+  font-style: italic;
+  font-size: 15px;
+  padding: 20px 0 10px;
+  opacity: 0.7;
+}
+.toast {
+  position: fixed;
+  bottom: 30px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--burgundy);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-style: italic;
+  box-shadow: 0 8px 24px rgba(139,58,82,0.35);
+  z-index: 200;
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+@media (max-width: 580px) {
+  .modal { padding: 28px 20px; }
+  header h1 { font-size: 2.8rem; }
+  .letters-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Loading screen -->
+<div id="loading-screen">
+  <div class="loading-flower">🌸</div>
+  <div class="loading-text">Connecting with love...</div>
+</div>
+
+<!-- Sync status -->
+<div id="sync-status">
+  <div class="sync-dot" id="sync-dot"></div>
+  <span id="sync-text">Live</span>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<div class="wrapper">
+  <header>
+    <div class="header-florals">🌸 🌷 🌸</div>
+    <div class="wax-seal">💌</div>
+    <h1>Open <em>When...</em></h1>
+    <p class="subtitle">Letters sealed with love, waiting for the right moment</p>
+    <div class="mode-bar">
+      <button class="mode-btn active" id="read-btn" onclick="setMode('read')">💌 Read Letters</button>
+      <button class="mode-btn" id="write-btn" onclick="setMode('write')">✏️ Write Letters</button>
+    </div>
+  </header>
+  <div class="letters-grid" id="letters-grid">
+    <div class="empty-hint" style="grid-column:1/-1">Connecting to your love letters... 🌸</div>
+  </div>
+</div>
+
+<!-- Password Modal -->
+<div class="modal-overlay" id="pw-modal">
+  <div class="modal">
+    <div class="pw-modal-icon">🔒</div>
+    <h2>This letter is sealed</h2>
+    <p class="modal-sub">Enter the password to open this envelope</p>
+    <div class="field-group">
+      <div class="pw-wrap">
+        <input type="password" class="field-input" id="pw-input" placeholder="Password..." onkeypress="if(event.key==='Enter') checkPassword()">
+        <button class="pw-toggle" onclick="togglePw('pw-input',this)">👁</button>
+      </div>
+      <div class="error-msg" id="pw-error"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('pw-modal')">Cancel</button>
+      <button class="btn-primary" onclick="checkPassword()">Open with Love 🌸</button>
+    </div>
+  </div>
+</div>
+
+<!-- Read Modal -->
+<div class="modal-overlay" id="read-modal">
+  <div class="modal">
+    <div class="modal-floral">🌷 🌸 🌷</div>
+    <h2 id="read-modal-title">Open When...</h2>
+    <p class="modal-sub">A letter just for you 🌸</p>
+    <div class="letter-paper">
+      <div class="letter-lines" id="read-modal-body"></div>
+      <div class="letter-closing" id="read-modal-closing"></div>
+    </div>
+    <div class="modal-actions" style="margin-top:20px;">
+      <button class="btn-primary" onclick="closeModal('read-modal')">Close with love 🌸</button>
+    </div>
+  </div>
+</div>
+
+<!-- Write Modal -->
+<div class="modal-overlay" id="write-modal">
+  <div class="modal">
+    <div class="modal-floral">✏️ 🌸 ✏️</div>
+    <h2 id="write-modal-title">Write a Letter</h2>
+    <p class="modal-sub">Pour your heart out — they'll read this at just the right moment</p>
+    <div class="field-group">
+      <label class="field-label">Open When... (finish the sentence)</label>
+      <input type="text" class="field-input" id="wm-title" placeholder="e.g. you're feeling lonely">
+    </div>
+    <div class="field-group">
+      <label class="field-label">Your Letter</label>
+      <textarea class="field-textarea" id="wm-body" placeholder="Dear love,&#10;&#10;I wrote this because..."></textarea>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Signed with</label>
+      <input type="text" class="field-input" id="wm-sign" placeholder="e.g. Always yours, with all my heart...">
+    </div>
+    <div class="field-group">
+      <label class="field-label">Envelope emoji</label>
+      <select class="field-select" id="wm-emoji">
+        <option value="🌸">🌸 Blossom</option>
+        <option value="💌">💌 Love Letter</option>
+        <option value="🌷">🌷 Tulip</option>
+        <option value="🌙">🌙 Moon</option>
+        <option value="☀️">☀️ Sunshine</option>
+        <option value="🍀">🍀 Lucky Clover</option>
+        <option value="⭐">⭐ Star</option>
+        <option value="🦋">🦋 Butterfly</option>
+        <option value="🎀">🎀 Ribbon</option>
+        <option value="🕊️">🕊️ Dove</option>
+        <option value="💐">💐 Bouquet</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Password to open 🔒</label>
+      <div class="pw-wrap">
+        <input type="password" class="field-input" id="wm-password" placeholder="Set a secret password...">
+        <button class="pw-toggle" onclick="togglePw('wm-password',this)">👁</button>
+      </div>
+      <div style="font-size:12px;color:var(--text-light);margin-top:5px;font-style:italic;">Share this password with your love so they can open it</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('write-modal')">Cancel</button>
+      <button class="btn-primary" id="wm-save-btn" onclick="saveLetter()">Seal with Love 💌</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let mode = 'read';
+let letters = {};
+let pendingLetterId = null;
+let editingId = null;
+
+// Wait for Firebase
+function waitForFirebase(cb) {
+  if (window._firebaseReady) cb();
+  else window.addEventListener('firebaseReady', cb, { once: true });
+}
+
+waitForFirebase(() => {
+  // Hide loading screen
+  setTimeout(() => {
+    document.getElementById('loading-screen').classList.add('hide');
+    setTimeout(() => document.getElementById('loading-screen').remove(), 500);
+  }, 800);
+
+  // Listen for real-time changes — updates for ALL users instantly
+  window._onValue(window._lettersRef, (snapshot) => {
+    const data = snapshot.val();
+    letters = data || {};
+
+    // If no letters exist yet, seed defaults
+    if (Object.keys(letters).length === 0) {
+      seedDefaultLetters();
+    } else {
+      renderGrid();
+    }
+    setSyncStatus(true);
+  }, (error) => {
+    console.error(error);
+    setSyncStatus(false);
+  });
+});
+
+function setSyncStatus(online) {
+  const dot = document.getElementById('sync-dot');
+  const text = document.getElementById('sync-text');
+  dot.className = 'sync-dot' + (online ? '' : ' offline');
+  text.textContent = online ? 'Live ✓' : 'Offline';
+}
+
+// Seed default letters into Firebase
+function seedDefaultLetters() {
+  const defaults = [
+    { title: "you're feeling sad", body: "My darling,\n\nIf you're reading this, it means today feels heavy. That's okay. You are allowed to feel this. You don't have to be strong right now.\n\nI want you to know that sadness is just love with nowhere to go — and I'm right here, holding all of it with you.\n\nYou are so deeply loved. This moment will pass, and I'll be here on the other side of it.\n\nAlways,", sign: "The one who loves you most 🌸", emoji: "🌸", password: "sunshine", opened: false },
+    { title: "you miss me", body: "Oh, you miss me?\n\nGood. Because I miss you so much it makes my chest ache in the most beautiful way.\n\nRight now, wherever I am, I'm probably thinking about you too. The way you laugh. The way you say my name. The small things you do that you don't even know I notice.\n\nDistance is just a number. My heart has no miles.", sign: "Closer than you think 💌", emoji: "💌", password: "stardust", opened: false },
+    { title: "you can't sleep", body: "Shhh.\n\nLay back down. Close your eyes.\n\nImagine we're lying together, your head on my chest, listening to the sound of rain outside. You don't have to think about tomorrow. You don't have to solve anything tonight.\n\nJust breathe. In... and out.\n\nYou are safe. You are loved. Sleep now, my darling.", sign: "Your 3am comfort 🌙", emoji: "🌙", password: "dreamsoft", opened: false },
+    { title: "you need a laugh", body: "Okay listen.\n\nRemember that time you did the thing — YES that thing — and I couldn't stop laughing for like five whole minutes?\n\nYou have the best laugh in the world, by the way. It's one of my favourite sounds.\n\nAlso: you have something on your face. Just kidding. But now you touched your face, didn't you? 😄\n\nThere it is. That smile.", sign: "Your favourite silly person 🎀", emoji: "🎀", password: "hahaha", opened: false },
+    { title: "you're proud of yourself", body: "YES. YOU DID IT.\n\nI knew you would. I've always known. You walk into things doubting yourself and come out the other side having conquered them entirely.\n\nI am so, so proud of you. Not just for this — but for every quiet battle you fight, every day you choose to keep going.\n\nCelebrate yourself today. You deserve every bit of this.", sign: "Your loudest cheerleader 🌷", emoji: "🌷", password: "bravo", opened: false }
+  ];
+  defaults.forEach(l => {
+    const newRef = window._push(window._lettersRef);
+    window._set(newRef, { ...l, id: newRef.key });
+  });
+}
+
+// Mode toggle
+function setMode(m) {
+  mode = m;
+  document.getElementById('read-btn').classList.toggle('active', m === 'read');
+  document.getElementById('write-btn').classList.toggle('active', m === 'write');
+  renderGrid();
+}
+
+// Render grid from Firebase data
+function renderGrid() {
+  const grid = document.getElementById('letters-grid');
+  grid.innerHTML = '';
+  const keys = Object.keys(letters);
+
+  if (keys.length === 0 && mode === 'read') {
+    grid.innerHTML = '<div class="empty-hint" style="grid-column:1/-1">No letters yet 🌸 Switch to Write mode to add some</div>';
+    return;
+  }
+
+  keys.forEach((key, idx) => {
+    const letter = letters[key];
+    const wrap = document.createElement('div');
+    wrap.className = 'envelope-wrap';
+    wrap.style.animationDelay = (idx * 0.07) + 's';
+    const isOpened = letter.opened;
+    const hintText = mode === 'write' ? 'Click to edit' : (isOpened ? 'Read again' : 'Tap to open');
+    wrap.innerHTML = `
+      <div class="envelope ${isOpened ? 'is-opened' : ''}" onclick="handleEnvelopeClick('${key}')">
+        ${mode === 'write' ? `<button class="env-delete" onclick="deleteLetter(event,'${key}')">🗑</button>` : ''}
+        <div class="env-body">
+          <div class="env-flap"></div>
+          <div class="env-stamp">${letter.emoji || '🌸'}</div>
+          <div class="env-postmark">Love<br>Mail</div>
+          <div class="env-content">
+            <div class="env-label">Open when...</div>
+            <div class="env-title">${letter.title}</div>
+            <div class="env-footer">
+              <div class="env-status ${isOpened ? 'opened' : 'locked'}">
+                <span class="status-dot"></span>
+                ${isOpened ? '🌸 Opened' : '🔒 Sealed'}
+              </div>
+              <div class="env-floral-deco">🌷</div>
+            </div>
+          </div>
+        </div>
+        <div class="env-lock-overlay"><div class="lock-hint">${hintText}</div></div>
+      </div>`;
+    grid.appendChild(wrap);
+  });
+
+  if (mode === 'write') {
+    const addWrap = document.createElement('div');
+    addWrap.className = 'envelope-wrap';
+    addWrap.style.animationDelay = (keys.length * 0.07) + 's';
+    addWrap.innerHTML = `<div class="add-card" onclick="openWriteModal()"><div class="add-icon">🌸</div>Write a new letter</div>`;
+    grid.appendChild(addWrap);
+  }
+}
+
+function handleEnvelopeClick(id) {
+  const letter = letters[id];
+  if (!letter) return;
+  if (mode === 'write') { openWriteModal(id); return; }
+  if (letter.opened) { openReadModal(letter); return; }
+  pendingLetterId = id;
+  document.getElementById('pw-input').value = '';
+  document.getElementById('pw-error').textContent = '';
+  showModal('pw-modal');
+  setTimeout(() => document.getElementById('pw-input').focus(), 300);
+}
+
+function checkPassword() {
+  const letter = letters[pendingLetterId];
+  if (!letter) return;
+  const entered = document.getElementById('pw-input').value;
+  if (entered === letter.password) {
+    // Update opened status in Firebase — partner sees it instantly!
+    window._update(window._ref(window._db, 'letters/' + pendingLetterId), { opened: true });
+    closeModal('pw-modal');
+    spawnFlorals();
+    setTimeout(() => openReadModal({ ...letter, opened: true }), 400);
+    showToast('Letter opened 🌸 Your love can see this too');
+  } else {
+    document.getElementById('pw-error').textContent = "That's not quite right, my love 🌸";
+    document.querySelector('#pw-modal .modal').classList.add('shake');
+    setTimeout(() => document.querySelector('#pw-modal .modal').classList.remove('shake'), 400);
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+  }
+}
+
+function openReadModal(letter) {
+  document.getElementById('read-modal-title').textContent = 'Open When... ' + letter.title;
+  document.getElementById('read-modal-body').textContent = letter.body;
+  document.getElementById('read-modal-closing').textContent = letter.sign;
+  showModal('read-modal');
+}
+
+function openWriteModal(id = null) {
+  editingId = id;
+  const letter = id ? letters[id] : null;
+  document.getElementById('write-modal-title').textContent = id ? 'Edit Letter' : 'Write a New Letter';
+  document.getElementById('wm-title').value = letter ? letter.title : '';
+  document.getElementById('wm-body').value = letter ? letter.body : '';
+  document.getElementById('wm-sign').value = letter ? letter.sign : '';
+  document.getElementById('wm-emoji').value = letter ? (letter.emoji || '🌸') : '🌸';
+  document.getElementById('wm-password').value = letter ? letter.password : '';
+  document.getElementById('wm-save-btn').textContent = id ? 'Save Changes 🌸' : 'Seal with Love 💌';
+  showModal('write-modal');
+  setTimeout(() => document.getElementById('wm-title').focus(), 300);
+}
+
+function saveLetter() {
+  const title = document.getElementById('wm-title').value.trim();
+  const body = document.getElementById('wm-body').value.trim();
+  const sign = document.getElementById('wm-sign').value.trim();
+  const emoji = document.getElementById('wm-emoji').value;
+  const password = document.getElementById('wm-password').value;
+  if (!title || !body || !password) { showToast('Please fill in title, letter & password 🌸'); return; }
+
+  if (editingId) {
+    // Update existing letter in Firebase
+    window._update(window._ref(window._db, 'letters/' + editingId), { title, body, sign, emoji, password });
+    showToast('Letter updated 🌷');
+  } else {
+    // Push new letter to Firebase
+    const newRef = window._push(window._lettersRef);
+    window._set(newRef, { id: newRef.key, title, body, sign, emoji, password, opened: false });
+    showToast('Letter sealed with love 💌');
+  }
+  closeModal('write-modal');
+  editingId = null;
+}
+
+function deleteLetter(e, id) {
+  e.stopPropagation();
+  if (!confirm('Delete this letter forever? 🌸')) return;
+  window._remove(window._ref(window._db, 'letters/' + id));
+  showToast('Letter removed 🕊️');
+}
+
+function showModal(id) { document.getElementById(id).classList.add('show'); document.body.style.overflow = 'hidden'; }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); document.body.style.overflow = ''; }
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', function(e) { if (e.target === this) closeModal(this.id); });
+});
+
+function togglePw(inputId, btn) {
+  const input = document.getElementById(inputId);
+  input.type = input.type === 'password' ? 'text' : 'password';
+  btn.textContent = input.type === 'password' ? '👁' : '🙈';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function spawnFlorals() {
+  const florals = ['🌸','🌷','💮','🌺','✿','💐'];
+  for (let i = 0; i < 12; i++) {
+    const el = document.createElement('div');
+    el.className = 'floatie';
+    el.textContent = florals[Math.floor(Math.random() * florals.length)];
+    el.style.left = (20 + Math.random() * 60) + 'vw';
+    el.style.bottom = '30px';
+    el.style.fontSize = (14 + Math.random() * 16) + 'px';
+    el.style.animationDelay = (Math.random() * 0.5) + 's';
+    el.style.animationDuration = (3 + Math.random() * 3) + 's';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 7000);
+  }
+}
+</script>
+</body>
+</html>
