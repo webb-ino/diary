@@ -3,10 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Open When... 💌 Letters for You</title>
+<title>Open When... 💌</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
 
-<!-- Firebase -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getDatabase, ref, set, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -18,15 +17,13 @@
     projectId: "letter-a88f6",
     storageBucket: "letter-a88f6.firebasestorage.app",
     messagingSenderId: "567979438831",
-    appId: "1:567979438831:web:872d69e30ad246983f611a",
-    measurementId: "G-BEWVS0GMEV"
+    appId: "1:567979438831:web:872d69e30ad246983f611a"
   };
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
   const lettersRef = ref(db, 'letters');
 
-  // Expose to window so non-module scripts can use
   window._db = db;
   window._ref = ref;
   window._set = set;
@@ -57,9 +54,7 @@
   --gold-light: #e8d5b0;
   --shadow: rgba(139,58,82,0.12);
 }
-
 * { margin:0; padding:0; box-sizing:border-box; }
-
 body {
   font-family: 'Crimson Pro', serif;
   background: var(--cream);
@@ -67,7 +62,6 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
 }
-
 body::before {
   content: '';
   position: fixed; inset: 0;
@@ -77,7 +71,6 @@ body::before {
     radial-gradient(ellipse at 60% 10%, rgba(252,233,238,0.4) 0%, transparent 40%);
   pointer-events: none; z-index: 0;
 }
-
 .floatie {
   position: fixed;
   font-size: 16px;
@@ -91,7 +84,6 @@ body::before {
   20% { opacity: 0.5; }
   100% { opacity: 0; transform: translateY(-200px) rotate(30deg); }
 }
-
 .wrapper {
   position: relative; z-index: 1;
   max-width: 920px;
@@ -99,552 +91,236 @@ body::before {
   padding: 50px 24px 100px;
 }
 
-/* ===== LOADING ===== */
+/* LOADING */
 #loading-screen {
   position: fixed; inset: 0;
   background: var(--cream);
   z-index: 999;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  transition: opacity 0.5s;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 16px; transition: opacity 0.5s;
 }
 #loading-screen.hide { opacity: 0; pointer-events: none; }
-.loading-flower {
-  font-size: 48px;
-  animation: spin 2s linear infinite;
-}
+.loading-flower { font-size: 48px; animation: spin 2s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-.loading-text {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.3rem;
-  font-style: italic;
-  color: var(--text-mid);
-}
+.loading-text { font-family:'Cormorant Garamond',serif; font-size:1.3rem; font-style:italic; color:var(--text-mid); }
 
-/* ===== SYNC STATUS ===== */
+/* SYNC */
 #sync-status {
-  position: fixed;
-  top: 16px; right: 16px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: white;
-  border: 1px solid var(--blush);
-  border-radius: 20px;
-  padding: 6px 14px;
-  font-size: 12px;
-  color: var(--text-light);
-  box-shadow: 0 2px 10px var(--shadow);
-  z-index: 50;
-  transition: all 0.3s;
+  position: fixed; top: 16px; right: 16px;
+  display: flex; align-items: center; gap: 6px;
+  background: white; border: 1px solid var(--blush);
+  border-radius: 20px; padding: 6px 14px;
+  font-size: 12px; color: var(--text-light);
+  box-shadow: 0 2px 10px var(--shadow); z-index: 50;
 }
-.sync-dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: #4caf50;
-  animation: pulse-dot 2s infinite;
-}
-.sync-dot.offline { background: #e0a0a0; animation: none; }
-@keyframes pulse-dot {
-  0%,100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.8); }
-}
+.sync-dot { width:7px; height:7px; border-radius:50%; background:#4caf50; animation: pulse-dot 2s infinite; }
+.sync-dot.offline { background:#e0a0a0; animation:none; }
+@keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
 
-/* ===== HEADER ===== */
-header {
-  text-align: center;
-  margin-bottom: 60px;
-  animation: fadeDown 0.8s ease both;
-}
-@keyframes fadeDown {
-  from { opacity:0; transform: translateY(-20px); }
-  to { opacity:1; transform: translateY(0); }
-}
-.header-florals {
-  font-size: 22px;
-  letter-spacing: 12px;
-  margin-bottom: 16px;
-  opacity: 0.6;
-}
-header h1 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(2.8rem, 8vw, 5rem);
-  font-weight: 300;
-  color: var(--text);
-  line-height: 1;
-  margin-bottom: 8px;
-  letter-spacing: -1px;
-}
-header h1 em { font-style: italic; color: var(--deep-rose); font-weight: 400; }
-header .subtitle {
-  font-size: 17px;
-  color: var(--text-light);
-  font-style: italic;
-  font-weight: 300;
-  margin-bottom: 28px;
-}
+/* HEADER */
+header { text-align:center; margin-bottom:60px; animation: fadeDown .8s ease both; }
+@keyframes fadeDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+.header-florals { font-size:22px; letter-spacing:12px; margin-bottom:16px; opacity:.6; }
+header h1 { font-family:'Cormorant Garamond',serif; font-size:clamp(2.8rem,8vw,5rem); font-weight:300; line-height:1; margin-bottom:8px; letter-spacing:-1px; }
+header h1 em { font-style:italic; color:var(--deep-rose); font-weight:400; }
+header .subtitle { font-size:17px; color:var(--text-light); font-style:italic; font-weight:300; margin-bottom:28px; }
 .wax-seal {
-  display: inline-block;
-  width: 52px; height: 52px;
-  background: radial-gradient(circle at 40% 35%, #d4849a, var(--burgundy));
-  border-radius: 50%;
-  line-height: 52px;
-  font-size: 22px;
-  box-shadow: 0 4px 16px rgba(139,58,82,0.35), inset 0 1px 2px rgba(255,255,255,0.2);
-  margin-bottom: 20px;
-  animation: rotateSeal 0.6s ease 0.5s both;
+  display:inline-block; width:52px; height:52px;
+  background:radial-gradient(circle at 40% 35%, #d4849a, var(--burgundy));
+  border-radius:50%; line-height:52px; font-size:22px;
+  box-shadow: 0 4px 16px rgba(139,58,82,.35), inset 0 1px 2px rgba(255,255,255,.2);
+  margin-bottom:20px; animation: rotateSeal .6s ease .5s both;
 }
-@keyframes rotateSeal {
-  from { transform: scale(0) rotate(-180deg); opacity: 0; }
-  to { transform: scale(1) rotate(0deg); opacity: 1; }
-}
+@keyframes rotateSeal { from{transform:scale(0) rotate(-180deg);opacity:0} to{transform:scale(1) rotate(0);opacity:1} }
 
 .mode-bar {
-  display: inline-flex;
-  background: var(--petal);
-  border: 1px solid var(--blush);
-  border-radius: 30px;
-  padding: 4px;
-  gap: 4px;
-  margin-bottom: 40px;
+  display:inline-flex; background:var(--petal); border:1px solid var(--blush);
+  border-radius:30px; padding:4px; gap:4px; margin-bottom:40px;
 }
 .mode-btn {
-  padding: 8px 24px;
-  border-radius: 24px;
-  border: none;
-  font-family: 'Crimson Pro', serif;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.25s;
-  color: var(--text-mid);
-  background: transparent;
-  letter-spacing: 0.5px;
+  padding:8px 24px; border-radius:24px; border:none;
+  font-family:'Crimson Pro',serif; font-size:14px; cursor:pointer;
+  transition:all .25s; color:var(--text-mid); background:transparent; letter-spacing:.5px;
 }
-.mode-btn.active {
-  background: white;
-  color: var(--burgundy);
-  box-shadow: 0 2px 10px var(--shadow);
-}
+.mode-btn.active { background:white; color:var(--burgundy); box-shadow:0 2px 10px var(--shadow); }
 
-/* ===== LETTERS GRID ===== */
-.letters-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 24px;
-  margin-bottom: 32px;
-}
+/* GRID */
+.letters-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:24px; margin-bottom:32px; }
 
-/* ===== ENVELOPE ===== */
-.envelope-wrap {
-  animation: fadeUp 0.6s ease both;
-}
-@keyframes fadeUp {
-  from { opacity:0; transform: translateY(24px); }
-  to { opacity:1; transform: translateY(0); }
-}
+/* ENVELOPE */
+.envelope-wrap { animation: fadeUp .6s ease both; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
 .envelope {
-  position: relative;
-  border-radius: 16px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.3s, box-shadow 0.3s;
-  box-shadow: 0 6px 28px var(--shadow), 0 1px 4px rgba(139,58,82,0.08);
+  position:relative; border-radius:16px; overflow:hidden; cursor:pointer;
+  transition:transform .3s, box-shadow .3s;
+  box-shadow:0 6px 28px var(--shadow), 0 1px 4px rgba(139,58,82,.08);
 }
-.envelope:hover {
-  transform: translateY(-4px) rotate(0.5deg);
-  box-shadow: 0 14px 40px var(--shadow);
-}
+.envelope:hover { transform:translateY(-4px) rotate(.5deg); box-shadow:0 14px 40px var(--shadow); }
 .env-body {
-  background: linear-gradient(160deg, var(--parchment) 0%, #fef0f5 100%);
-  border: 1px solid var(--blush);
-  border-radius: 16px;
-  padding: 28px 22px 22px;
-  position: relative;
-  min-height: 200px;
-  display: flex;
-  flex-direction: column;
+  background:linear-gradient(160deg,var(--parchment) 0%,#fef0f5 100%);
+  border:1px solid var(--blush); border-radius:16px;
+  padding:28px 22px 22px; position:relative; min-height:200px;
+  display:flex; flex-direction:column;
 }
-.env-flap {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 80px;
-  overflow: hidden;
-  border-radius: 16px 16px 0 0;
-}
+.env-flap { position:absolute; top:0; left:0; right:0; height:80px; overflow:hidden; border-radius:16px 16px 0 0; }
 .env-flap::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 50%;
-  transform: translateX(-50%);
-  width: 0; height: 0;
-  border-left: 160px solid transparent;
-  border-right: 160px solid transparent;
-  border-top: 80px solid var(--blush);
-  opacity: 0.5;
+  content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:0; height:0; border-left:160px solid transparent; border-right:160px solid transparent;
+  border-top:80px solid var(--blush); opacity:.5;
 }
 .env-flap::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 50%;
-  transform: translateX(-50%);
-  width: 0; height: 0;
-  border-left: 155px solid transparent;
-  border-right: 155px solid transparent;
-  border-top: 76px solid #fdf5f8;
-  opacity: 0.7;
+  content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:0; height:0; border-left:155px solid transparent; border-right:155px solid transparent;
+  border-top:76px solid #fdf5f8; opacity:.7;
 }
 .env-stamp {
-  position: absolute;
-  top: 14px; right: 16px;
-  width: 36px; height: 44px;
-  border: 2px solid var(--gold);
-  border-radius: 3px;
-  background: var(--gold-light);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  box-shadow: inset 0 0 0 3px rgba(255,255,255,0.7);
+  position:absolute; top:14px; right:16px;
+  width:36px; height:44px; border:2px solid var(--gold);
+  border-radius:3px; background:var(--gold-light);
+  display:flex; align-items:center; justify-content:center; font-size:18px;
+  box-shadow:inset 0 0 0 3px rgba(255,255,255,.7);
 }
 .env-stamp::before {
-  content: '';
-  position: absolute;
-  inset: -5px;
-  border: 1px dashed var(--gold);
-  border-radius: 4px;
-  opacity: 0.4;
+  content:''; position:absolute; inset:-5px;
+  border:1px dashed var(--gold); border-radius:4px; opacity:.4;
 }
 .env-postmark {
-  position: absolute;
-  top: 10px; right: 60px;
-  width: 48px; height: 48px;
-  border: 1.5px solid var(--rose);
-  border-radius: 50%;
-  opacity: 0.3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 8px;
-  color: var(--deep-rose);
-  text-align: center;
-  line-height: 1.2;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+  position:absolute; top:10px; right:60px;
+  width:48px; height:48px; border:1.5px solid var(--rose); border-radius:50%;
+  opacity:.3; display:flex; align-items:center; justify-content:center;
+  font-size:8px; color:var(--deep-rose); text-align:center; line-height:1.2;
+  letter-spacing:.5px; text-transform:uppercase;
 }
-.env-content {
-  margin-top: 52px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+.env-content { margin-top:52px; flex:1; display:flex; flex-direction:column; }
+.env-label { font-family:'Cormorant Garamond',serif; font-size:13px; text-transform:uppercase; letter-spacing:2px; color:var(--text-light); margin-bottom:6px; }
+.env-title { font-family:'Cormorant Garamond',serif; font-size:1.35rem; font-weight:400; color:var(--text); line-height:1.3; font-style:italic; flex:1; }
+.env-footer { display:flex; align-items:center; justify-content:space-between; margin-top:18px; padding-top:12px; border-top:1px dashed var(--blush); }
+.env-status { font-size:12px; letter-spacing:1px; text-transform:uppercase; display:flex; align-items:center; gap:5px; }
+.env-status.locked { color:var(--text-light); }
+.env-status.opened { color:var(--deep-rose); }
+.status-dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+.env-floral-deco { font-size:16px; opacity:.4; }
+.envelope.is-opened .env-body { background:linear-gradient(160deg,#fff8fb 0%,#fdeef5 100%); border-color:var(--rose); }
+.env-lock-overlay { position:absolute; inset:0; border-radius:16px; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .2s; }
+.envelope:hover .env-lock-overlay { opacity:1; }
+.lock-hint { background:white; border:1px solid var(--blush); border-radius:20px; padding:6px 16px; font-size:12px; color:var(--deep-rose); letter-spacing:.5px; box-shadow:0 4px 12px var(--shadow); }
+.env-delete { position:absolute; top:10px; left:14px; background:none; border:none; font-size:16px; cursor:pointer; opacity:0; transition:opacity .2s; z-index:2; color:var(--text-light); }
+.envelope:hover .env-delete { opacity:.6; }
+.env-delete:hover { opacity:1 !important; color:var(--burgundy); }
+
+/* ADD CARD */
+.add-card {
+  border:2px dashed var(--blush); border-radius:16px; background:transparent;
+  min-height:200px; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:10px; cursor:pointer;
+  transition:all .25s; color:var(--text-light);
+  font-family:'Cormorant Garamond',serif; font-size:1rem; font-style:italic;
 }
-.env-label {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: var(--text-light);
-  margin-bottom: 6px;
+.add-card:hover { border-color:var(--rose); background:var(--lace); color:var(--deep-rose); transform:translateY(-2px); }
+.add-icon { font-size:28px; opacity:.6; }
+
+/* MODALS */
+.modal-overlay {
+  position:fixed; inset:0;
+  background:rgba(74,37,53,.4); backdrop-filter:blur(6px);
+  z-index:100; display:flex; align-items:center; justify-content:center;
+  padding:20px; opacity:0; pointer-events:none; transition:opacity .3s;
 }
-.env-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.35rem;
-  font-weight: 400;
-  color: var(--text);
-  line-height: 1.3;
-  font-style: italic;
-  flex: 1;
+.modal-overlay.show { opacity:1; pointer-events:all; }
+.modal {
+  background:var(--parchment); border:1px solid var(--blush);
+  border-radius:24px; padding:40px; max-width:520px; width:100%;
+  position:relative; box-shadow:0 24px 80px rgba(139,58,82,.2);
+  transform:translateY(20px) scale(.97); transition:transform .3s;
+  max-height:90vh; overflow-y:auto;
 }
-.env-footer {
+.modal-overlay.show .modal { transform:translateY(0) scale(1); }
+.modal-floral { text-align:center; font-size:28px; margin-bottom:16px; letter-spacing:8px; }
+.modal h2 { font-family:'Cormorant Garamond',serif; font-size:1.8rem; font-weight:400; color:var(--text); text-align:center; margin-bottom:6px; font-style:italic; }
+.modal .modal-sub { text-align:center; font-size:14px; color:var(--text-light); font-style:italic; margin-bottom:28px; }
+.field-group { margin-bottom:18px; }
+.field-label { display:block; font-size:12px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-mid); margin-bottom:6px; }
+.field-input, .field-textarea, .field-select {
+  width:100%; background:white; border:1px solid var(--blush);
+  border-radius:12px; padding:12px 16px;
+  font-family:'Crimson Pro',serif; font-size:16px; color:var(--text);
+  outline:none; transition:border .2s, box-shadow .2s;
+}
+.field-input:focus, .field-textarea:focus, .field-select:focus { border-color:var(--deep-rose); box-shadow:0 0 0 3px rgba(201,115,138,.12); }
+.field-textarea { min-height:160px; resize:vertical; line-height:1.7; }
+.field-select { cursor:pointer; }
+.pw-wrap { position:relative; }
+.pw-wrap .field-input { padding-right:44px; }
+.pw-toggle { position:absolute; right:14px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:16px; opacity:.5; transition:opacity .2s; }
+.pw-toggle:hover { opacity:1; }
+.modal-actions { display:flex; gap:10px; margin-top:24px; }
+.btn-primary { flex:1; background:linear-gradient(135deg,var(--rose),var(--deep-rose)); color:white; border:none; border-radius:12px; padding:14px; font-family:'Crimson Pro',serif; font-size:16px; cursor:pointer; transition:transform .15s, box-shadow .2s; }
+.btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(201,115,138,.4); }
+.btn-secondary { padding:14px 20px; background:transparent; border:1px solid var(--blush); border-radius:12px; font-family:'Crimson Pro',serif; font-size:15px; color:var(--text-mid); cursor:pointer; transition:background .2s; }
+.btn-secondary:hover { background:var(--petal); }
+.letter-paper {
+  background:white; border:1px solid var(--blush); border-radius:16px;
+  padding:32px 28px; position:relative; box-shadow:inset 0 0 30px rgba(245,205,214,.2);
+}
+.letter-paper::before { content:''; position:absolute; left:48px; top:0; bottom:0; width:1px; background:rgba(232,160,180,.3); }
+.letter-lines { font-family:'Crimson Pro',serif; font-size:17px; line-height:2; color:var(--text); white-space:pre-wrap; padding-left:20px; }
+.letter-closing { margin-top:24px; text-align:right; font-style:italic; color:var(--text-mid); font-size:15px; }
+.pw-modal-icon { text-align:center; font-size:40px; margin-bottom:12px; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
+.shake { animation:shake .4s ease; }
+.error-msg { color:var(--deep-rose); font-size:13px; text-align:center; margin-top:8px; font-style:italic; min-height:18px; }
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background:var(--petal); }
+::-webkit-scrollbar-thumb { background:var(--blush); border-radius:10px; }
+.empty-hint { text-align:center; color:var(--text-light); font-style:italic; font-size:15px; padding:20px 0 10px; opacity:.7; }
+.toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--burgundy); color:white; padding:12px 24px; border-radius:30px; font-size:14px; font-style:italic; box-shadow:0 8px 24px rgba(139,58,82,.35); z-index:200; transition:transform .4s cubic-bezier(.34,1.56,.64,1); pointer-events:none; }
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+/* PASSWORD REVEAL — writer mode only */
+.pw-reveal-box {
+  background: linear-gradient(135deg, #fff5f8, #fdeef4);
+  border: 1px dashed var(--rose);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-top: 8px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 18px;
-  padding-top: 12px;
-  border-top: 1px dashed var(--blush);
-}
-.env-status {
-  font-size: 12px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-.env-status.locked { color: var(--text-light); }
-.env-status.opened { color: var(--deep-rose); }
-.status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-.env-floral-deco { font-size: 16px; opacity: 0.4; }
-.envelope.is-opened .env-body {
-  background: linear-gradient(160deg, #fff8fb 0%, #fdeef5 100%);
-  border-color: var(--rose);
-}
-.env-lock-overlay {
-  position: absolute; inset: 0;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-.envelope:hover .env-lock-overlay { opacity: 1; }
-.lock-hint {
-  background: white;
-  border: 1px solid var(--blush);
-  border-radius: 20px;
-  padding: 6px 16px;
-  font-size: 12px;
-  color: var(--deep-rose);
-  letter-spacing: 0.5px;
-  box-shadow: 0 4px 12px var(--shadow);
-}
-.env-delete {
-  position: absolute;
-  top: 10px; left: 14px;
-  background: none; border: none;
-  font-size: 16px; cursor: pointer;
-  opacity: 0; transition: opacity 0.2s;
-  z-index: 2; color: var(--text-light);
-}
-.envelope:hover .env-delete { opacity: 0.6; }
-.env-delete:hover { opacity: 1 !important; color: var(--burgundy); }
-
-/* ===== ADD CARD ===== */
-.add-card {
-  border: 2px dashed var(--blush);
-  border-radius: 16px;
-  background: transparent;
-  min-height: 200px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   gap: 10px;
-  cursor: pointer;
-  transition: all 0.25s;
-  color: var(--text-light);
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1rem;
-  font-style: italic;
 }
-.add-card:hover {
-  border-color: var(--rose);
-  background: var(--lace);
-  color: var(--deep-rose);
-  transform: translateY(-2px);
+.pw-reveal-label { font-size: 12px; color: var(--text-light); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+.pw-reveal-value { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: var(--burgundy); letter-spacing: 2px; font-style: italic; }
+.pw-reveal-note { font-size: 11.5px; color: var(--text-light); font-style: italic; margin-top: 6px; }
+.pw-copy-btn { background: var(--petal); border: 1px solid var(--blush); border-radius: 8px; padding: 6px 12px; font-family: 'Crimson Pro', serif; font-size: 13px; color: var(--deep-rose); cursor: pointer; white-space: nowrap; transition: background .2s; }
+.pw-copy-btn:hover { background: var(--blush); }
+.secret-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: #fff3f7; border: 1px solid var(--blush);
+  border-radius: 20px; padding: 4px 12px;
+  font-size: 11.5px; color: var(--text-light); font-style: italic;
+  margin-bottom: 6px;
 }
-.add-icon { font-size: 28px; opacity: 0.6; }
 
-/* ===== MODALS ===== */
-.modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(74,37,53,0.4);
-  backdrop-filter: blur(6px);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s;
-}
-.modal-overlay.show { opacity: 1; pointer-events: all; }
-.modal {
-  background: var(--parchment);
-  border: 1px solid var(--blush);
-  border-radius: 24px;
-  padding: 40px;
-  max-width: 520px;
-  width: 100%;
-  position: relative;
-  box-shadow: 0 24px 80px rgba(139,58,82,0.2);
-  transform: translateY(20px) scale(0.97);
-  transition: transform 0.3s;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-.modal-overlay.show .modal { transform: translateY(0) scale(1); }
-.modal-floral { text-align: center; font-size: 28px; margin-bottom: 16px; letter-spacing: 8px; }
-.modal h2 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.8rem;
-  font-weight: 400;
-  color: var(--text);
-  text-align: center;
-  margin-bottom: 6px;
-  font-style: italic;
-}
-.modal .modal-sub {
-  text-align: center;
-  font-size: 14px;
-  color: var(--text-light);
-  font-style: italic;
-  margin-bottom: 28px;
-}
-.field-group { margin-bottom: 18px; }
-.field-label {
-  display: block;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--text-mid);
-  margin-bottom: 6px;
-}
-.field-input, .field-textarea, .field-select {
-  width: 100%;
-  background: white;
-  border: 1px solid var(--blush);
-  border-radius: 12px;
-  padding: 12px 16px;
-  font-family: 'Crimson Pro', serif;
-  font-size: 16px;
-  color: var(--text);
-  outline: none;
-  transition: border 0.2s, box-shadow 0.2s;
-}
-.field-input:focus, .field-textarea:focus, .field-select:focus {
-  border-color: var(--deep-rose);
-  box-shadow: 0 0 0 3px rgba(201,115,138,0.12);
-}
-.field-textarea { min-height: 160px; resize: vertical; line-height: 1.7; }
-.field-select { cursor: pointer; }
-.pw-wrap { position: relative; }
-.pw-wrap .field-input { padding-right: 44px; }
-.pw-toggle {
-  position: absolute;
-  right: 14px; top: 50%;
-  transform: translateY(-50%);
-  background: none; border: none;
-  cursor: pointer; font-size: 16px;
-  opacity: 0.5; transition: opacity 0.2s;
-}
-.pw-toggle:hover { opacity: 1; }
-.modal-actions { display: flex; gap: 10px; margin-top: 24px; }
-.btn-primary {
-  flex: 1;
-  background: linear-gradient(135deg, var(--rose), var(--deep-rose));
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 14px;
-  font-family: 'Crimson Pro', serif;
-  font-size: 16px;
-  cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.2s;
-}
-.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(201,115,138,0.4); }
-.btn-secondary {
-  padding: 14px 20px;
-  background: transparent;
-  border: 1px solid var(--blush);
-  border-radius: 12px;
-  font-family: 'Crimson Pro', serif;
-  font-size: 15px;
-  color: var(--text-mid);
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.btn-secondary:hover { background: var(--petal); }
-.letter-paper {
-  background: white;
-  border: 1px solid var(--blush);
-  border-radius: 16px;
-  padding: 32px 28px;
-  position: relative;
-  box-shadow: inset 0 0 30px rgba(245,205,214,0.2);
-}
-.letter-paper::before {
-  content: '';
-  position: absolute;
-  left: 48px; top: 0; bottom: 0;
-  width: 1px;
-  background: rgba(232,160,180,0.3);
-}
-.letter-lines {
-  font-family: 'Crimson Pro', serif;
-  font-size: 17px;
-  line-height: 2;
-  color: var(--text);
-  white-space: pre-wrap;
-  padding-left: 20px;
-}
-.letter-closing {
-  margin-top: 24px;
-  text-align: right;
-  font-style: italic;
-  color: var(--text-mid);
-  font-size: 15px;
-}
-.pw-modal-icon { text-align: center; font-size: 40px; margin-bottom: 12px; }
-@keyframes shake {
-  0%,100% { transform: translateX(0); }
-  20% { transform: translateX(-8px); }
-  40% { transform: translateX(8px); }
-  60% { transform: translateX(-5px); }
-  80% { transform: translateX(5px); }
-}
-.shake { animation: shake 0.4s ease; }
-.error-msg {
-  color: var(--deep-rose);
-  font-size: 13px;
-  text-align: center;
-  margin-top: 8px;
-  font-style: italic;
-  min-height: 18px;
-}
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: var(--petal); }
-::-webkit-scrollbar-thumb { background: var(--blush); border-radius: 10px; }
-.empty-hint {
-  text-align: center;
-  color: var(--text-light);
-  font-style: italic;
-  font-size: 15px;
-  padding: 20px 0 10px;
-  opacity: 0.7;
-}
-.toast {
-  position: fixed;
-  bottom: 30px; left: 50%;
-  transform: translateX(-50%) translateY(80px);
-  background: var(--burgundy);
-  color: white;
-  padding: 12px 24px;
-  border-radius: 30px;
-  font-size: 14px;
-  font-style: italic;
-  box-shadow: 0 8px 24px rgba(139,58,82,0.35);
-  z-index: 200;
-  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
-  pointer-events: none;
-}
-.toast.show { transform: translateX(-50%) translateY(0); }
-@media (max-width: 580px) {
-  .modal { padding: 28px 20px; }
-  header h1 { font-size: 2.8rem; }
-  .letters-grid { grid-template-columns: 1fr; }
+@media (max-width:580px) {
+  .modal { padding:28px 20px; }
+  header h1 { font-size:2.8rem; }
+  .letters-grid { grid-template-columns:1fr; }
 }
 </style>
 </head>
 <body>
 
-<!-- Loading screen -->
 <div id="loading-screen">
   <div class="loading-flower">🌸</div>
   <div class="loading-text">Connecting with love...</div>
 </div>
 
-<!-- Sync status -->
 <div id="sync-status">
   <div class="sync-dot" id="sync-dot"></div>
   <span id="sync-text">Live</span>
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <div class="wrapper">
@@ -663,7 +339,7 @@ header .subtitle {
   </div>
 </div>
 
-<!-- Password Modal -->
+<!-- Password (unlock) Modal — reader view, NO password shown -->
 <div class="modal-overlay" id="pw-modal">
   <div class="modal">
     <div class="pw-modal-icon">🔒</div>
@@ -699,7 +375,7 @@ header .subtitle {
   </div>
 </div>
 
-<!-- Write Modal -->
+<!-- Write Modal — writer sees password -->
 <div class="modal-overlay" id="write-modal">
   <div class="modal">
     <div class="modal-floral">✏️ 🌸 ✏️</div>
@@ -733,14 +409,25 @@ header .subtitle {
         <option value="💐">💐 Bouquet</option>
       </select>
     </div>
+
+    <!-- Password section — visible ONLY to the writer -->
     <div class="field-group">
-      <label class="field-label">Password to open 🔒</label>
+      <label class="field-label">Password to seal this letter 🔒</label>
+      <div class="secret-badge">🔐 Only you can see this password</div>
       <div class="pw-wrap">
-        <input type="password" class="field-input" id="wm-password" placeholder="Set a secret password...">
-        <button class="pw-toggle" onclick="togglePw('wm-password',this)">👁</button>
+        <input type="text" class="field-input" id="wm-password" placeholder="Set a secret password...">
       </div>
-      <div style="font-size:12px;color:var(--text-light);margin-top:5px;font-style:italic;">Share this password with your love so they can open it</div>
+      <!-- Live reveal box: shows what's typed, writer can copy it -->
+      <div class="pw-reveal-box" id="pw-reveal-box" style="display:none;">
+        <div>
+          <div class="pw-reveal-label">Your secret password</div>
+          <div class="pw-reveal-value" id="pw-reveal-value"></div>
+          <div class="pw-reveal-note">Share this privately with your love — it won't be visible anywhere else</div>
+        </div>
+        <button class="pw-copy-btn" onclick="copyPassword()">Copy 🌸</button>
+      </div>
     </div>
+
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal('write-modal')">Cancel</button>
       <button class="btn-primary" id="wm-save-btn" onclick="saveLetter()">Seal with Love 💌</button>
@@ -754,60 +441,81 @@ let letters = {};
 let pendingLetterId = null;
 let editingId = null;
 
-// Wait for Firebase
+// --- SHA-256 hash utility (no dependencies) ---
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// Live password preview for writer
+document.addEventListener('DOMContentLoaded', () => {
+  const pwInput = document.getElementById('wm-password');
+  if (pwInput) {
+    pwInput.addEventListener('input', () => {
+      const val = pwInput.value;
+      const box = document.getElementById('pw-reveal-box');
+      const reveal = document.getElementById('pw-reveal-value');
+      if (val.length > 0) {
+        box.style.display = 'flex';
+        reveal.textContent = val;
+      } else {
+        box.style.display = 'none';
+      }
+    });
+  }
+});
+
+function copyPassword() {
+  const val = document.getElementById('wm-password').value;
+  if (val) {
+    navigator.clipboard.writeText(val).then(() => showToast('Password copied! 🌸 Share it privately'));
+  }
+}
+
+// --- Firebase init ---
 function waitForFirebase(cb) {
   if (window._firebaseReady) cb();
   else window.addEventListener('firebaseReady', cb, { once: true });
 }
 
 waitForFirebase(() => {
-  // Hide loading screen
   setTimeout(() => {
     document.getElementById('loading-screen').classList.add('hide');
     setTimeout(() => document.getElementById('loading-screen').remove(), 500);
   }, 800);
 
-  // Listen for real-time changes — updates for ALL users instantly
   window._onValue(window._lettersRef, (snapshot) => {
     const data = snapshot.val();
     letters = data || {};
-
-    // If no letters exist yet, seed defaults
     if (Object.keys(letters).length === 0) {
       seedDefaultLetters();
     } else {
       renderGrid();
     }
     setSyncStatus(true);
-  }, (error) => {
-    console.error(error);
-    setSyncStatus(false);
-  });
+  }, () => setSyncStatus(false));
 });
 
 function setSyncStatus(online) {
-  const dot = document.getElementById('sync-dot');
-  const text = document.getElementById('sync-text');
-  dot.className = 'sync-dot' + (online ? '' : ' offline');
-  text.textContent = online ? 'Live ✓' : 'Offline';
+  document.getElementById('sync-dot').className = 'sync-dot' + (online ? '' : ' offline');
+  document.getElementById('sync-text').textContent = online ? 'Live ✓' : 'Offline';
 }
 
-// Seed default letters into Firebase
-function seedDefaultLetters() {
+async function seedDefaultLetters() {
   const defaults = [
-    { title: "you're feeling sad", body: "My darling,\n\nIf you're reading this, it means today feels heavy. That's okay. You are allowed to feel this. You don't have to be strong right now.\n\nI want you to know that sadness is just love with nowhere to go — and I'm right here, holding all of it with you.\n\nYou are so deeply loved. This moment will pass, and I'll be here on the other side of it.\n\nAlways,", sign: "The one who loves you most 🌸", emoji: "🌸", password: "sunshine", opened: false },
-    { title: "you miss me", body: "Oh, you miss me?\n\nGood. Because I miss you so much it makes my chest ache in the most beautiful way.\n\nRight now, wherever I am, I'm probably thinking about you too. The way you laugh. The way you say my name. The small things you do that you don't even know I notice.\n\nDistance is just a number. My heart has no miles.", sign: "Closer than you think 💌", emoji: "💌", password: "stardust", opened: false },
-    { title: "you can't sleep", body: "Shhh.\n\nLay back down. Close your eyes.\n\nImagine we're lying together, your head on my chest, listening to the sound of rain outside. You don't have to think about tomorrow. You don't have to solve anything tonight.\n\nJust breathe. In... and out.\n\nYou are safe. You are loved. Sleep now, my darling.", sign: "Your 3am comfort 🌙", emoji: "🌙", password: "dreamsoft", opened: false },
-    { title: "you need a laugh", body: "Okay listen.\n\nRemember that time you did the thing — YES that thing — and I couldn't stop laughing for like five whole minutes?\n\nYou have the best laugh in the world, by the way. It's one of my favourite sounds.\n\nAlso: you have something on your face. Just kidding. But now you touched your face, didn't you? 😄\n\nThere it is. That smile.", sign: "Your favourite silly person 🎀", emoji: "🎀", password: "hahaha", opened: false },
-    { title: "you're proud of yourself", body: "YES. YOU DID IT.\n\nI knew you would. I've always known. You walk into things doubting yourself and come out the other side having conquered them entirely.\n\nI am so, so proud of you. Not just for this — but for every quiet battle you fight, every day you choose to keep going.\n\nCelebrate yourself today. You deserve every bit of this.", sign: "Your loudest cheerleader 🌷", emoji: "🌷", password: "bravo", opened: false }
+    { title:"you're feeling sad", body:"My darling,\n\nIf you're reading this, it means today feels heavy. That's okay. You are allowed to feel this. You don't have to be strong right now.\n\nI want you to know that sadness is just love with nowhere to go — and I'm right here, holding all of it with you.\n\nYou are so deeply loved. This moment will pass, and I'll be here on the other side of it.\n\nAlways,", sign:"The one who loves you most 🌸", emoji:"🌸", password:"sunshine" },
+    { title:"you miss me", body:"Oh, you miss me?\n\nGood. Because I miss you so much it makes my chest ache in the most beautiful way.\n\nRight now, wherever I am, I'm probably thinking about you too. The way you laugh. The way you say my name. The small things you do that you don't even know I notice.\n\nDistance is just a number. My heart has no miles.", sign:"Closer than you think 💌", emoji:"💌", password:"stardust" },
+    { title:"you can't sleep", body:"Shhh.\n\nLay back down. Close your eyes.\n\nImagine we're lying together, your head on my chest, listening to the sound of rain outside. You don't have to think about tomorrow. You don't have to solve anything tonight.\n\nJust breathe. In... and out.\n\nYou are safe. You are loved. Sleep now, my darling.", sign:"Your 3am comfort 🌙", emoji:"🌙", password:"dreamsoft" },
+    { title:"you need a laugh", body:"Okay listen.\n\nRemember that time you did the thing — YES that thing — and I couldn't stop laughing for like five whole minutes?\n\nYou have the best laugh in the world, by the way. It's one of my favourite sounds.\n\nAlso: you have something on your face. Just kidding. But now you touched your face, didn't you? 😄\n\nThere it is. That smile.", sign:"Your favourite silly person 🎀", emoji:"🎀", password:"hahaha" },
+    { title:"you're proud of yourself", body:"YES. YOU DID IT.\n\nI knew you would. I've always known. You walk into things doubting yourself and come out the other side having conquered them entirely.\n\nI am so, so proud of you. Not just for this — but for every quiet battle you fight, every day you choose to keep going.\n\nCelebrate yourself today. You deserve every bit of this.", sign:"Your loudest cheerleader 🌷", emoji:"🌷", password:"bravo" }
   ];
-  defaults.forEach(l => {
+  for (const l of defaults) {
+    const hash = await sha256(l.password);
     const newRef = window._push(window._lettersRef);
-    window._set(newRef, { ...l, id: newRef.key });
-  });
+    window._set(newRef, { id: newRef.key, title: l.title, body: l.body, sign: l.sign, emoji: l.emoji, passwordHash: hash, opened: false });
+  }
 }
 
-// Mode toggle
 function setMode(m) {
   mode = m;
   document.getElementById('read-btn').classList.toggle('active', m === 'read');
@@ -815,7 +523,6 @@ function setMode(m) {
   renderGrid();
 }
 
-// Render grid from Firebase data
 function renderGrid() {
   const grid = document.getElementById('letters-grid');
   grid.innerHTML = '';
@@ -878,12 +585,14 @@ function handleEnvelopeClick(id) {
   setTimeout(() => document.getElementById('pw-input').focus(), 300);
 }
 
-function checkPassword() {
+async function checkPassword() {
   const letter = letters[pendingLetterId];
   if (!letter) return;
   const entered = document.getElementById('pw-input').value;
-  if (entered === letter.password) {
-    // Update opened status in Firebase — partner sees it instantly!
+  const enteredHash = await sha256(entered);
+
+  // Compare hash only — plain text password never stored or visible
+  if (enteredHash === letter.passwordHash) {
     window._update(window._ref(window._db, 'letters/' + pendingLetterId), { opened: true });
     closeModal('pw-modal');
     spawnFlorals();
@@ -913,30 +622,39 @@ function openWriteModal(id = null) {
   document.getElementById('wm-body').value = letter ? letter.body : '';
   document.getElementById('wm-sign').value = letter ? letter.sign : '';
   document.getElementById('wm-emoji').value = letter ? (letter.emoji || '🌸') : '🌸';
-  document.getElementById('wm-password').value = letter ? letter.password : '';
+  // When editing: password field is blank (can't reverse the hash — they type a new one to change it)
+  document.getElementById('wm-password').value = '';
+  document.getElementById('pw-reveal-box').style.display = 'none';
   document.getElementById('wm-save-btn').textContent = id ? 'Save Changes 🌸' : 'Seal with Love 💌';
   showModal('write-modal');
   setTimeout(() => document.getElementById('wm-title').focus(), 300);
 }
 
-function saveLetter() {
+async function saveLetter() {
   const title = document.getElementById('wm-title').value.trim();
   const body = document.getElementById('wm-body').value.trim();
   const sign = document.getElementById('wm-sign').value.trim();
   const emoji = document.getElementById('wm-emoji').value;
   const password = document.getElementById('wm-password').value;
-  if (!title || !body || !password) { showToast('Please fill in title, letter & password 🌸'); return; }
+
+  if (!title || !body) { showToast('Please fill in the title and letter 🌸'); return; }
 
   if (editingId) {
-    // Update existing letter in Firebase
-    window._update(window._ref(window._db, 'letters/' + editingId), { title, body, sign, emoji, password });
+    // If editing and no new password entered, keep existing hash
+    const updateData = { title, body, sign, emoji };
+    if (password) {
+      updateData.passwordHash = await sha256(password);
+    }
+    window._update(window._ref(window._db, 'letters/' + editingId), updateData);
     showToast('Letter updated 🌷');
   } else {
-    // Push new letter to Firebase
+    if (!password) { showToast('Please set a password 🔒'); return; }
+    const passwordHash = await sha256(password);
     const newRef = window._push(window._lettersRef);
-    window._set(newRef, { id: newRef.key, title, body, sign, emoji, password, opened: false });
+    window._set(newRef, { id: newRef.key, title, body, sign, emoji, passwordHash, opened: false });
     showToast('Letter sealed with love 💌');
   }
+
   closeModal('write-modal');
   editingId = null;
 }
